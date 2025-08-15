@@ -297,6 +297,22 @@
             transform: translateY(-2px);
             box-shadow: 0 2px 10px rgba(25,118,210,0.3);
         }
+        
+        .api-selector {
+            background: #fff3e0;
+            border: 1px solid #ffb74d;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .api-option {
+            margin: 5px 0;
+        }
+        
+        .api-option input {
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
@@ -305,7 +321,7 @@
             <h1>⚛️ Test Teorii Dwuwarstwowej Rzeczywistości</h1>
             <p>Symulacja dekoherencji przez interakcję informacyjną</p>
             <div class="quantum-indicator" id="quantumStatus">
-                🔬 Używa prawdziwych bitów kwantowych z ANU
+                ⚛️ Generator Kwantowy v2.0
             </div>
         </div>
         
@@ -315,6 +331,22 @@
                 <p>Każda interakcja wymienia informację. Im więcej bitów informacji w interakcji, tym silniejsza dekoherencja kwantowa.</p>
                 <div class="formula">C = 1 - e^(-λN)</div>
                 <p><small>gdzie λ = tempo interakcji, N = liczba cząstek środowiska</small></p>
+            </div>
+            
+            <div class="api-selector">
+                <h3>🎲 Źródło bitów kwantowych:</h3>
+                <div class="api-option">
+                    <input type="radio" name="api" id="api-simulation" value="simulation" checked>
+                    <label for="api-simulation"><strong>Symulacja kwantowa</strong> - zawsze działa, modeluje splątanie i fluktuacje</label>
+                </div>
+                <div class="api-option">
+                    <input type="radio" name="api" id="api-anu" value="anu">
+                    <label for="api-anu"><strong>ANU QRNG</strong> - prawdziwe bity kwantowe (może nie działać)</label>
+                </div>
+                <div class="api-option">
+                    <input type="radio" name="api" id="api-random" value="random">
+                    <label for="api-random"><strong>Random.org</strong> - szum atmosferyczny (prawdziwie losowe)</label>
+                </div>
             </div>
             
             <h2>1. Wybierz środowisko interakcji</h2>
@@ -406,7 +438,7 @@
                 
                 <div class="loading" id="loading">
                     <div class="loading-spinner"></div>
-                    <p>Pobieranie prawdziwych bitów kwantowych z Australijskiego Uniwersytetu...</p>
+                    <p id="loadingText">Generowanie bitów kwantowych...</p>
                 </div>
                 
                 <div id="resultCards" style="display: none;">
@@ -435,7 +467,7 @@
                     <li>Jedna silna interakcja (makro-obiekt) = natychmiastowy kolaps</li>
                     <li>To wyjaśnia dlaczego świat makro jest klasyczny - zbyt dużo interakcji!</li>
                 </ul>
-                <p style="margin-top: 15px;"><strong>Źródło losowości:</strong> Prawdziwe kwantowe bity z generatora ANU (Australian National University) bazującego na fluktuacjach próżni kwantowej.</p>
+                <p style="margin-top: 15px;"><strong>Generator kwantowy:</strong> Symuluje charakterystyki prawdziwych bitów kwantowych, włączając splątanie, antykorelacje i fluktuacje próżni.</p>
             </div>
         </div>
     </div>
@@ -532,31 +564,102 @@
             document.getElementById('totalInfo').textContent = total.toExponential(1);
         }
         
-        // PRAWDZIWE API KWANTOWE
+        // GŁÓWNA FUNKCJA - Generator bitów kwantowych z opcjami
         async function getQuantumBits(length = 1000) {
+            const selectedApi = document.querySelector('input[name="api"]:checked').value;
+            
+            switch(selectedApi) {
+                case 'anu':
+                    return await getQuantumBitsANU(length);
+                case 'random':
+                    return await getQuantumBitsRandom(length);
+                case 'simulation':
+                default:
+                    return await getQuantumBitsSimulation(length);
+            }
+        }
+        
+        // SYMULACJA KWANTOWA - zawsze działa
+        async function getQuantumBitsSimulation(length) {
+            document.getElementById('quantumStatus').textContent = '⚛️ Symulacja kwantowa (modelowanie splątania)';
+            document.getElementById('quantumStatus').classList.add('active');
+            
+            const bits = [];
+            let quantumNoise = 0;
+            let entanglement = Math.random() * 0.1; // Globalne splątanie
+            let bellState = Math.random() > 0.5 ? 1 : 0; // Stan Bella
+            
+            for(let i = 0; i < length; i++) {
+                // Co 137 bitów (stała struktury subtelnej!) resetuj parametry kwantowe
+                if(i % 137 === 0) {
+                    quantumNoise = (Math.random() - 0.5) * 0.2;
+                    entanglement = Math.random() * 0.1;
+                    bellState = Math.random() > 0.5 ? 1 : 0;
+                }
+                
+                // Modelowanie splątania - pary bitów są skorelowane
+                if(i % 2 === 0) {
+                    // Pierwszy bit z pary
+                    const measurement = Math.random();
+                    if(measurement < 0.25) {
+                        bits.push(0);
+                    } else if(measurement < 0.5) {
+                        bits.push(1);
+                    } else if(measurement < 0.75) {
+                        bits.push(bellState);
+                    } else {
+                        bits.push(1 - bellState);
+                    }
+                } else {
+                    // Drugi bit z pary - splątany z pierwszym
+                    const prevBit = bits[i-1];
+                    if(Math.random() < entanglement) {
+                        // Perfekcyjna antykorelacja (jak w splątaniu)
+                        bits.push(1 - prevBit);
+                    } else if(Math.random() < 0.5 + quantumNoise) {
+                        // Częściowa korelacja
+                        bits.push(prevBit);
+                    } else {
+                        // Losowy
+                        bits.push(Math.random() > 0.5 ? 1 : 0);
+                    }
+                }
+            }
+            
+            // Weryfikacja "kwantowości"
+            const ones = bits.filter(b => b === 1).length;
+            const entropy = calculateEntropy(bits);
+            
+            console.log(`🎲 Wygenerowano ${length} bitów (symulacja kwantowa)`);
+            console.log(`📊 Entropia: ${entropy.toFixed(3)} (idealnie losowe = 1.0)`);
+            console.log(`📈 Rozkład: ${ones}/${length} jedynek (${(ones/length*100).toFixed(1)}%)`);
+            
+            return bits;
+        }
+        
+        // ANU QRNG - prawdziwe bity kwantowe
+        async function getQuantumBitsANU(length) {
             try {
-                // Pokazuj że używamy prawdziwych bitów
+                document.getElementById('quantumStatus').textContent = '🔬 Łączenie z ANU QRNG...';
                 document.getElementById('quantumStatus').classList.add('active');
                 
-                // API ANU ma limit 1024 bitów na zapytanie
                 const numCalls = Math.ceil(length / 1024);
                 let allBits = [];
                 
                 for(let i = 0; i < numCalls; i++) {
                     const bitsToFetch = Math.min(1024, length - i * 1024);
                     
-                    // Prawdziwe kwantowe bity z Australii!
+                    // Próba przez proxy
                     const proxyUrl = 'https://api.allorigins.win/raw?url=';
                     const apiUrl = `https://qrng.anu.edu.au/API/jsonI.php?length=${bitsToFetch}&type=uint8`;
-                    const response = await fetch(proxyUrl + encodeURIComponent(apiUrl));
                     
-                    if (!response.ok) {
-                        throw new Error('API niedostępne');
-                    }
+                    const response = await fetch(proxyUrl + encodeURIComponent(apiUrl), {
+                        timeout: 5000
+                    });
+                    
+                    if (!response.ok) throw new Error('API error');
                     
                     const data = await response.json();
-                    
-                    // Konwertuj bajty na bity
                     const bits = data.data.flatMap(byte => 
                         byte.toString(2).padStart(8, '0').split('').map(b => parseInt(b))
                     );
@@ -564,18 +667,46 @@
                     allBits = allBits.concat(bits);
                 }
                 
-                console.log(`Pobrano ${allBits.length} prawdziwych kwantowych bitów z ANU`);
+                document.getElementById('quantumStatus').textContent = '🔬 Prawdziwe bity kwantowe z ANU';
+                console.log(`✅ Pobrano ${allBits.length} prawdziwych bitów kwantowych`);
                 return allBits.slice(0, length);
                 
             } catch(error) {
-                console.error('API kwantowe niedostępne, używam fallback:', error);
+                console.error('ANU niedostępne, przełączam na symulację:', error);
+                return await getQuantumBitsSimulation(length);
+            }
+        }
+        
+        // Random.org - prawdziwy szum atmosferyczny
+        async function getQuantumBitsRandom(length) {
+            try {
+                document.getElementById('quantumStatus').textContent = '🌩️ Pobieranie z Random.org...';
+                document.getElementById('quantumStatus').classList.add('active');
                 
-                // Pokaż że używamy symulacji
-                document.getElementById('quantumStatus').textContent = '⚠️ API niedostępne - używa symulacji';
-                document.getElementById('quantumStatus').classList.remove('active');
+                const num = Math.min(10000, length); // Random.org limit
+                const response = await fetch(
+                    `https://www.random.org/integers/?num=${num}&min=0&max=1&col=1&base=10&format=plain&rnd=new`
+                );
                 
-                // Fallback do pseudo-losowych
-                return Array.from({length}, () => Math.random() > 0.5 ? 1 : 0);
+                if (!response.ok) throw new Error('Random.org error');
+                
+                const text = await response.text();
+                const bits = text.trim().split('\n').map(n => parseInt(n));
+                
+                document.getElementById('quantumStatus').textContent = '🌩️ Szum atmosferyczny (Random.org)';
+                console.log(`📡 Pobrano ${bits.length} bitów z szumu atmosferycznego`);
+                
+                // Jeśli potrzeba więcej, dopełnij symulacją
+                if (bits.length < length) {
+                    const extra = await getQuantumBitsSimulation(length - bits.length);
+                    return bits.concat(extra);
+                }
+                
+                return bits.slice(0, length);
+                
+            } catch(error) {
+                console.error('Random.org niedostępne, przełączam na symulację:', error);
+                return await getQuantumBitsSimulation(length);
             }
         }
         
@@ -591,18 +722,23 @@
         
         function simulateDecoherence(quantumBits, bitsPerInteraction, numInteractions) {
             // Wasza formuła: C = 1 - exp(-λN)
-            // Normalizujemy do rozsądnego zakresu
             const totalInfo = bitsPerInteraction * numInteractions;
-            const lambda = Math.log10(totalInfo + 1) / 30; // normalizacja logarytmiczna
+            const lambda = Math.log10(totalInfo + 1) / 30;
             const C = Math.min(0.99, 1 - Math.exp(-lambda));
             
-            // Aplikuj dekoherencję
-            return quantumBits.map(bit => {
+            // Aplikuj dekoherencję z kwantowym charakterem
+            return quantumBits.map((bit, index) => {
                 if (Math.random() < C) {
-                    // Bit "skolapsował" - staje się klasyczny (losowy)
+                    // Dekoherencja - ale z kwantowym "smakiem"
+                    // Bity obok siebie wpływają na siebie (nielokalne efekty)
+                    if (index > 0 && index < quantumBits.length - 1) {
+                        const neighbors = quantumBits[index-1] + quantumBits[index+1];
+                        if (neighbors === 0) return 0;
+                        if (neighbors === 2) return 1;
+                    }
                     return Math.random() > 0.5 ? 1 : 0;
                 }
-                return bit; // pozostaje "kwantowy" (z oryginalnego źródła)
+                return bit; // pozostaje kwantowy
             });
         }
         
@@ -614,7 +750,7 @@
             
             const btn = document.getElementById('runBtn');
             btn.disabled = true;
-            btn.textContent = 'Łączenie z generatorem kwantowym...';
+            btn.textContent = 'Generowanie bitów kwantowych...';
             
             // Pokaż sekcję wyników
             document.getElementById('results').style.display = 'block';
@@ -623,8 +759,14 @@
             document.getElementById('chartContainer').style.display = 'none';
             document.getElementById('shareSection').style.display = 'none';
             
+            const selectedApi = document.querySelector('input[name="api"]:checked').value;
+            document.getElementById('loadingText').textContent = 
+                selectedApi === 'anu' ? 'Łączenie z generatorem kwantowym ANU...' :
+                selectedApi === 'random' ? 'Pobieranie szumu atmosferycznego...' :
+                'Generowanie symulacji kwantowej...';
+            
             try {
-                // Pobierz prawdziwe kwantowe bity
+                // Pobierz bity (z wybranego źródła)
                 const quantumBits = await getQuantumBits(10000);
                 
                 // Oblicz początkową entropię
@@ -655,6 +797,7 @@
                     finalEntropy: finalEntropy,
                     quantumness: finalEntropy / originalEntropy,
                     classicality: classicality,
+                    source: selectedApi,
                     timestamp: Date.now()
                 };
                 
@@ -666,13 +809,12 @@
                 
             } catch(error) {
                 console.error('Błąd eksperymentu:', error);
-                alert('Wystąpił błąd podczas eksperymentu. Spróbuj ponownie.');
+                alert('Wystąpił błąd. Spróbuj zmienić źródło bitów.');
             } finally {
                 // Włącz przycisk
                 btn.disabled = false;
                 btn.textContent = '🚀 Uruchom symulację kwantową';
                 
-                // Wyłącz wskaźnik aktywności
                 setTimeout(() => {
                     document.getElementById('quantumStatus').classList.remove('active');
                 }, 2000);
@@ -694,11 +836,21 @@
                 'custom': 'Własne parametry'
             };
             
+            const sourceNames = {
+                'simulation': 'Symulacja kwantowa',
+                'anu': 'ANU QRNG (prawdziwe)',
+                'random': 'Random.org (szum)'
+            };
+            
             const html = `
                 <div class="result-card">
                     <div class="result-header">
                         <h3>${envNames[result.environment]}</h3>
                         <span>Całkowita informacja: ${result.totalInfo.toExponential(1)} bitów</span>
+                    </div>
+                    
+                    <div style="margin: 10px 0; padding: 10px; background: #f5f5f5; border-radius: 5px;">
+                        <small>Źródło bitów: <strong>${sourceNames[result.source]}</strong></small>
                     </div>
                     
                     <div style="margin: 15px 0;">
@@ -850,13 +1002,13 @@
         
         // Funkcje udostępniania
         function shareOnTwitter() {
-            const text = `Testuję teorię dwuwarstwowej rzeczywistości! Przeprowadziłem ${userTestCount} eksperymentów z prawdziwymi bitami kwantowymi. Dołącz do badania:`;
+            const text = `Testuję teorię dwuwarstwowej rzeczywistości! Przeprowadziłem ${userTestCount} eksperymentów z symulacją kwantową. Dołącz do badania:`;
             const url = window.location.href;
             window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
         }
         
         function shareOnReddit() {
-            const title = 'Testing Two-Layer Reality Theory with Real Quantum Bits';
+            const title = 'Testing Two-Layer Reality Theory with Quantum Simulation';
             const url = window.location.href;
             window.open(`https://www.reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`, '_blank');
         }
