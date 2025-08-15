@@ -546,9 +546,9 @@
                     const bitsToFetch = Math.min(1024, length - i * 1024);
                     
                     // Prawdziwe kwantowe bity z Australii!
-                    const response = await fetch(
-                        `https://qrng.anu.edu.au/API/jsonI.php?length=${bitsToFetch}&type=uint8`
-                    );
+                    const proxyUrl = 'https://api.allorigins.win/raw?url=';
+                    const apiUrl = `https://qrng.anu.edu.au/API/jsonI.php?length=${bitsToFetch}&type=uint8`;
+                    const response = await fetch(proxyUrl + encodeURIComponent(apiUrl));
                     
                     if (!response.ok) {
                         throw new Error('API niedostępne');
